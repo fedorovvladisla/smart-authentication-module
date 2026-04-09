@@ -108,7 +108,7 @@ auth:
   geoip:
     database: classpath:GeoLite2-City.mmdb
   jwt:
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    secret: ***
     expiration: 86400000
     refresh-expiration: 604800000
 
@@ -116,5 +116,5 @@ auth:
 
 compreface:
   base-url: http://localhost:8001
-  api-key: 84bc037e-f497-4032-b64f-ff4cdc7d6970
+  api-key: ***
   recognition-url: ${compreface.base-url}/api/v1/recognition/${compreface.api-key}
