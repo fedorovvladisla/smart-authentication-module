@@ -8,4 +8,5 @@ import java.util.Optional;
 @Repository
 public interface ConsentRepository extends JpaRepository<UserConsent, String> {
     Optional<UserConsent> findByUserId(String userId);
+    boolean existsByUserId(String userId);
 }

@@ -13,4 +13,5 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUsernameAndBlockedFalse(String username);
     List<User> findByRole(Role role);
     List<User> findByBlocked(boolean blocked);
+    boolean existsByUsername(String username);
 }
