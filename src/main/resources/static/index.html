@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интеллектуальная аутентификация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button {
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        video {
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Интеллектуальный модуль аутентификации</h2>
+    <div>
+        <input type="text" id="username" placeholder="Введите логин" />
+        <button onclick="initLogin()">Начать вход</button>
+    </div>
+    <div id="methodInfo" class="success" style="margin-top: 10px;"></div>
+</div>
+
+<div id="facePanel" class="card" style="display:none;">
+    <h3>Аутентификация по лицу</h3>
+    <video id="video" autoplay muted></video>
+    <div class="flex">
+        <button onclick="captureAndRegister()">Зарегистрировать лицо</button>
+        <button onclick="captureAndLogin()">Войти по лицу</button>
+    </div>
+    <div id="faceResult"></div>
+</div>
+
+<div id="passkeyPanel" class="card" style="display:none;">
+    <h3>Аутентификация по Passkey</h3>
+    <p>Для работы Passkey требуется HTTPS. В демонстрационном режиме используйте Face ID.</p>
+    <button onclick="startPasskeyLogin()">Войти с Passkey</button>
+    <div id="passkeyResult"></div>
+</div>
+
+<script>
+    let currentUsername = '';
+    let videoStream = null;
+
+    // Инициализация входа – адаптивный выбор метода
+    async function initLogin() {
+        const username = document.getElementById('username').value;
+        if (!username) {
+            alert('Введите логин');
+            return;
+        }
+        currentUsername = username;
+
+        try {
+            const response = await fetch(`/api/auth/login/init?username=${username}`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            const method = data.method;
+            document.getElementById('methodInfo').innerHTML = `Рекомендуемый метод: <strong>${method}</strong>`;
+
+            // Показать нужную панель
+            document.getElementById('facePanel').style.display = 'none';
+            document.getElementById('passkeyPanel').style.display = 'none';
+
+            if (method === 'FACE') {
+                document.getElementById('facePanel').style.display = 'block';
+                startCamera();
+            } else if (method === 'PASSKEY') {
+                document.getElementById('passkeyPanel').style.display = 'block';
+            } else {
+                alert('Метод не поддерживается в демо');
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('methodInfo').innerHTML = `<span class="error">Ошибка: ${err.message}</span>`;
+        }
+    }
+
+    // Запуск камеры
+    async function startCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.getElementById('video');
+            video.srcObject = videoStream;
+        } catch (err) {
+            console.error('Ошибка доступа к камере', err);
+            alert('Нет доступа к камере');
+        }
+    }
+
+    // Захват текущего кадра с камеры в виде Blob
+    function captureFrame() {
+        const video = document.getElementById('video');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return new Promise(resolve => {
+            canvas.toBlob(resolve, 'image/jpeg');
+        });
+    }
+
+    // Регистрация лица
+    async function captureAndRegister() {
+        const blob = await captureFrame();
+        if (!blob) {
+            alert('Не удалось захватить кадр');
+            return;
+        }
+        const formData = new FormData();
+        // Отправляем как binary, но через blob
+        const response = await fetch(`/api/auth/face/register?username=${currentUsername}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: await blob.arrayBuffer()
+        });
+        const result = await response.json();
+        const div = document.getElementById('faceResult');
+        if (response.ok) {
+            div.innerHTML = `<span class="success">✅ ${result.message || 'Лицо зарегистрировано'}</span>`;
+        } else {
+            div.innerHTML = `<span class="error">❌ Ошибка: ${result.message || result.error}</span>`;
+        }
+    }
+
+    // Вход по лицу
+    async function captureAndLogin() {
+        const blob = await captureFrame();
+        if (!blob) {
+            alert('Не удалось захватить кадр');
+            return;
+        }
+        const response = await fetch(`/api/auth/face/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: await blob.arrayBuffer()
+        });
+        const result = await response.json();
+        const div = document.getElementById('faceResult');
+        if (response.ok) {
+            div.innerHTML = `<span class="success">Успешный вход! Токен: ${result.token}</span>`;
+        } else {
+            div.innerHTML = `<span class="error">Ошибка: ${result.message || result.error}</span>`;
+        }
+    }
+
+    // Passkey логин (заглушка, требует HTTPS)
+    async function startPasskeyLogin() {
+        alert('Для работы Passkey необходимо настроить HTTPS. Используйте аутентификацию по лицу.');
+        // Здесь можно добавить реальную реализацию WebAuthn, но для демо достаточно упоминания.
+    }
+</script>
+</body>
+</html>

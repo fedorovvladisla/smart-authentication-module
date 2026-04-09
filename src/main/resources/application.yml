@@ -1,0 +1,120 @@
+# ============================================================
+# Основные настройки Spring Boot приложения
+# ============================================================
+
+spring:
+  # Имя приложения (используется в Actuator, логах)
+  application:
+    name: smart-authentication-module
+
+  # ---------- База данных PostgreSQL ----------
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:authdb}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # ---------- JPA / Hibernate ----------
+  jpa:
+    hibernate:
+      ddl-auto: update                 # создаст/обновит таблицы при старте
+    show-sql: false                    # не выводим SQL в консоль (для отладки можно true)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        temp:
+          use_jdbc_metadata_defaults: false
+    open-in-view: false
+
+  # ---------- Redis (кэш неудачных попыток) ----------
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  # ---------- Thymeleaf для админки ----------
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false                       # отключаем кэш для разработки
+
+# ---------- Настройки встроенного сервера Tomcat ----------
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+# ---------- Логирование ----------
+logging:
+  level:
+    com.vkr.auth: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    com.yubico: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/auth-module.log
+    max-size: 10MB
+    max-history: 30
+
+# ---------- Spring Boot Actuator (healthcheck, метрики) ----------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: true
+    db:
+      enabled: true
+
+
+# ============================================================
+# Пользовательские настройки модуля аутентификации
+# ============================================================
+
+auth:
+  webauthn:
+    rp-id: ${RP_ID:localhost}
+    rp-name: "Smart Authentication Module"
+    origin: ${RP_ORIGIN:http://localhost:8080}
+  geoip:
+    database: classpath:GeoLite2-City.mmdb
+  jwt:
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    expiration: 86400000
+    refresh-expiration: 604800000
+
+# Настройка CompreFace
+
+compreface:
+  base-url: http://localhost:8001
+  api-key: 84bc037e-f497-4032-b64f-ff4cdc7d6970
+  recognition-url: ${compreface.base-url}/api/v1/recognition/${compreface.api-key}
