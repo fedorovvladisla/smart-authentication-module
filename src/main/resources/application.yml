@@ -9,9 +9,9 @@ spring:
 
   # ---------- База данных PostgreSQL ----------
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:authdb}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:authdb}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:secret}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -108,7 +108,7 @@ auth:
   geoip:
     database: classpath:GeoLite2-City.mmdb
   jwt:
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    secret: ${JWT_SECRET}
     expiration: 86400000
     refresh-expiration: 604800000
 
@@ -116,5 +116,5 @@ auth:
 
 compreface:
   base-url: http://localhost:8001
-  api-key: 84bc037e-f497-4032-b64f-ff4cdc7d6970
+  api-key: ${COMPREFACE_API_KEY}
   recognition-url: ${compreface.base-url}/api/v1/recognition/${compreface.api-key}
