@@ -24,7 +24,7 @@ public class AuthLogService {
     public void logAuthAttempt(String username, String method, HttpServletRequest request,
                                boolean success, String failureReason, Double confidence) {
         AuthLog logEntry = new AuthLog();  // переименовал, чтобы не конфликтовать с логгером
-        logEntry.setUsername(username);
+        logEntry.setUsername(username != null ? username : "anonymous");
         logEntry.setTimestamp(LocalDateTime.now());
         logEntry.setMethod(method);
         logEntry.setSuccess(success);
