@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smart-auth-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smart-auth
+  template:
+    metadata:
+      labels:
+        app: smart-auth
+    spec:
+      containers:
+        - name: app
+          image: smart-authentication-module:latest
+          imagePullPolicy: Never   # Важно для локальных образов!
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-service:5432/authdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: secret
+            - name: REDIS_HOST
+              value: redis-service
+            - name: COMPREFACE_BASE_URL
+              value: http://compreface-api-service:8000
+            - name: COMPREFACE_API_KEY
+              value: "84bc037e-f497-4032-b64f-ff4cdc7d6970" # Замените на ваш ключ
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smart-auth-service
+spec:
+  selector:
+    app: smart-auth
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort

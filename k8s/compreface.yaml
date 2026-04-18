@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compreface-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: compreface-api
+  template:
+    metadata:
+      labels:
+        app: compreface-api
+    spec:
+      containers:
+        - name: api
+          image: exadel/compreface-api:1.2.0
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: secret
+            - name: POSTGRES_URL
+              value: jdbc:postgresql://postgres-service:5432/authdb
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: compreface-api-service
+spec:
+  selector:
+    app: compreface-api
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

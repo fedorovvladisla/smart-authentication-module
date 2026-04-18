@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smart-auth-app
+  labels:
+    app: smart-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smart-auth
+  template:
+    metadata:
+      labels:
+        app: smart-auth
+    spec:
+      containers:
+        - name: app
+          image: smart-auth:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-service:5432/authdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: secret
+            - name: REDIS_HOST
+              value: redis-service
+            - name: COMPREFACE_BASE_URL
+              value: http://compreface-service:8000

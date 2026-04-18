@@ -1,0 +1,96 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+###
+### Базовый URL (измените порт, если нужно)
+@baseUrl = http://localhost:8080
+@comprefaceUrl = http://localhost:8001
+@apiKey = 84bc037e-f497-4032-b64f-ff4cdc7d6970
+@adminUser = admin
+@testUser = testuser
+
+### ========== Аутентификация по лицу ==========
+
+### 1. Регистрация лица для пользователя (создаст пользователя, если не существует)
+POST {{baseUrl}}/api/auth/face/register?username={{adminUser}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+Content-Length: <длина файла>
+
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="face.jpg"
+Content-Type: image/jpeg
+
+< C:/face/face1.jpg
+--WebKitFormBoundary--
+
+### 2. Вход по лицу
+POST {{baseUrl}}/api/auth/face/login
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="face.jpg"
+Content-Type: image/jpeg
+
+< C:/face/face1.jpg
+--WebKitFormBoundary--
+
+### ========== Адаптивный выбор метода ==========
+
+### 3. Определить метод для пользователя
+POST {{baseUrl}}/api/auth/login/init?username={{adminUser}}
+
+### ========== Админка (требуется аутентификация) ==========
+
+### 4. Логи (GET, требует авторизации)
+GET {{baseUrl}}/admin/logs
+Authorization: Basic admin admin123
+
+### 5. Пользователи (GET)
+GET {{baseUrl}}/admin/users
+Authorization: Basic admin admin123
+
+### ========== CompreFace напрямую (для отладки) ==========
+
+GET {{comprefaceUrl}}/api/v1/health
+
+### 7. Распознавание лица через CompreFace
+POST {{comprefaceUrl}}/api/v1/recognition/recognize
+x-api-key: {{apiKey}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="face.jpg"
+Content-Type: image/jpeg
+
+< C:/face/face1.jpg
+--WebKitFormBoundary--
+
+### 8. Регистрация лица через CompreFace напрямую
+POST {{comprefaceUrl}}/api/v1/recognition/faces?subject={{adminUser}}
+x-api-key: {{apiKey}}
+Content-Type: application/octet-stream < C:/face/face1.jpg
+
+### Будующие фичи
+
+### 9. Начало регистрации Passkey
+POST {{baseUrl}}/api/auth/passkey/register/start?username={{adminUser}}
+
+### 10. Завершение регистрации Passkey (требуется credentialJson от браузера)
+POST {{baseUrl}}/api/auth/passkey/register/finish
+Content-Type: application/json
+
+{
+  "credentialJson": "{}"
+}
+
+### 11. Начало входа Passkey
+POST {{baseUrl}}/api/auth/passkey/login/start?username={{adminUser}}
+
+### 12. Завершение входа Passkey
+POST {{baseUrl}}/api/auth/passkey/login/finish
+Content-Type: application/json
+
+{
+  "assertionJson": "{}"
+}
