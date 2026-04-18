@@ -2,6 +2,7 @@ package com.vkr.auth.controller;
 
 import com.vkr.auth.dto.AuthResponse;
 import com.vkr.auth.dto.ErrorResponse;
+import com.vkr.auth.model.Role;
 import com.vkr.auth.model.User;
 import com.vkr.auth.service.AuthLogService;
 import com.vkr.auth.service.UserService;
@@ -14,10 +15,12 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth/passkey")
@@ -29,15 +32,29 @@ public class PasskeyController {
     private final UserService userService;
     private final AuthLogService authLogService;
 
+    private User getOrCreateUser(String username) {
+        Optional<User> existingUser = userService.findByUsername(username);
+        if (existingUser.isPresent()) {
+            return existingUser.get();
+        }
+        User newUser = new User();
+        newUser.setUsername(username);
+        newUser.setPasswordHash(""); // пароль не используется для passkey
+        newUser.setRole(Role.USER);
+        newUser.setBlocked(false);
+        return userService.save(newUser);
+    }
+
     @PostMapping("/register/start")
     public ResponseEntity<?> startRegistration(@RequestParam String username, HttpSession session) {
         try {
-            User user = userService.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            User user = getOrCreateUser(username);
             PublicKeyCredentialCreationOptions options = webAuthnService.startRegistration(user);
             session.setAttribute("currentRegistrationOptions", options);
             session.setAttribute("registrationUsername", username);
-            return ResponseEntity.ok(options);
+            // Используем встроенную сериализацию
+            String json = options.toCredentialsCreateJson();
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(json);
         } catch (Exception e) {
             log.error("Start registration error", e);
             return ResponseEntity.badRequest().body(new ErrorResponse("registration_start_failed", e.getMessage(), 400));
@@ -73,7 +90,9 @@ public class PasskeyController {
             AssertionRequest request = webAuthnService.startLogin(user);
             session.setAttribute("currentAssertionRequest", request);
             session.setAttribute("loginUsername", username);
-            return ResponseEntity.ok(request);
+            // Используем встроенную сериализацию
+            String json = request.toJson();
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(json);
         } catch (Exception e) {
             log.error("Start login error", e);
             return ResponseEntity.badRequest().body(new ErrorResponse("login_start_failed", e.getMessage(), 400));

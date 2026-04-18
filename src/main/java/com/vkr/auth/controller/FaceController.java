@@ -4,6 +4,7 @@ import com.vkr.auth.dto.AuthResponse;
 import com.vkr.auth.cache.FailedAttemptsCache;
 import com.vkr.auth.dto.ErrorResponse;
 import com.vkr.auth.dto.FaceAuthenticationResult;
+import com.vkr.auth.model.Role;
 import com.vkr.auth.model.User;
 import com.vkr.auth.service.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.Optional;
@@ -28,15 +30,22 @@ public class FaceController {
     private final DynamicThresholdService thresholdService;
     private final FailedAttemptsCache failedAttemptsCache;
 
-    // Регистрация лица
     @PostMapping("/register")
     public ResponseEntity<?> registerFace(@RequestParam String username,
-                                          @RequestBody byte[] imageData,
+                                          @RequestParam("file") MultipartFile file,
                                           HttpServletRequest request) {
         try {
-            User user = userService.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            faceService.registerFace(user, imageData);
+            User user = userService.findByUsername(username).orElse(null);
+            if (user == null) {
+                user = new User();
+                user.setUsername(username);
+                user.setPasswordHash(""); // или зашифрованный временный пароль
+                user.setRole(Role.USER);
+                user.setBlocked(false);
+                user = userService.save(user);
+                log.info("Created new user: {}", username);
+            }
+            faceService.registerFace(user, file.getBytes());
             authLogService.logAuthAttempt(username, "FACE_REGISTER", request, true, null, null);
             return ResponseEntity.ok(Map.of("success", true, "message", "Face registered successfully"));
         } catch (Exception e) {
@@ -46,12 +55,11 @@ public class FaceController {
         }
     }
 
-    // Аутентификация по лицу
     @PostMapping("/login")
-    public ResponseEntity<?> loginFace(@RequestBody byte[] imageData,
+    public ResponseEntity<?> loginFace(@RequestParam("file") MultipartFile file,
                                        HttpServletRequest request) {
         try {
-            Optional<FaceAuthenticationResult> resultOpt = faceService.authenticate(imageData);
+            Optional<FaceAuthenticationResult> resultOpt = faceService.authenticate(file.getBytes());
             if (resultOpt.isEmpty()) {
                 authLogService.logAuthAttempt(null, "FACE", request, false, "No face detected", null);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -62,7 +70,6 @@ public class FaceController {
             User user = result.getUser();
             double confidence = result.getConfidence();
 
-            // Количество неудачных попыток из кэша
             int failedAttempts = failedAttemptsCache.getFailedAttempts(user.getUsername());
             double threshold = thresholdService.computeThreshold(failedAttempts);
             boolean success = confidence >= threshold;
