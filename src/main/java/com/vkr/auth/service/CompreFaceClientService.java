@@ -1,13 +1,18 @@
 package com.vkr.auth.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vkr.auth.dto.FaceAuthenticationResult;
 import com.vkr.auth.model.User;
 import com.vkr.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -21,18 +26,31 @@ public class CompreFaceClientService implements FaceRecognitionService {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${compreface.recognition-url}")
-    private String recognitionUrl;
+    @Value("${compreface.base-url}")
+    private String baseUrl;
+
+    @Value("${compreface.api-key}")
+    private String apiKey;
 
     @Override
     public void registerFace(User user, byte[] imageData) {
-        String url = recognitionUrl + "/subjects?subject=" + user.getId();
+        String url = baseUrl + "/api/v1/recognition/faces?subject=" + user.getId();
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        HttpEntity<byte[]> request = new HttpEntity<>(imageData, headers);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.set("x-api-key", apiKey);
 
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        ByteArrayResource resource = new ByteArrayResource(imageData) {
+            @Override
+            public String getFilename() {
+                return "face.jpg";
+            }
+        };
+        body.add("file", resource);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         try {
-            restTemplate.postForObject(url, request, String.class);
+            restTemplate.postForObject(url, requestEntity, String.class);
             log.info("User {} registered in CompreFace", user.getUsername());
         } catch (Exception e) {
             log.error("CompreFace registration failed", e);
@@ -42,20 +60,35 @@ public class CompreFaceClientService implements FaceRecognitionService {
 
     @Override
     public Optional<FaceAuthenticationResult> authenticate(byte[] imageData) {
-        String url = recognitionUrl + "/recognize";
+        String url = baseUrl + "/api/v1/recognition/recognize";
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        HttpEntity<byte[]> request = new HttpEntity<>(imageData, headers);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.set("x-api-key", apiKey);
 
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        ByteArrayResource resource = new ByteArrayResource(imageData) {
+            @Override
+            public String getFilename() {
+                return "face.jpg";
+            }
+        };
+        body.add("file", resource);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         try {
             ResponseEntity<RecognitionResponse> response = restTemplate.exchange(
-                    url, HttpMethod.POST, request, RecognitionResponse.class);
-            RecognitionResponse body = response.getBody();
-            if (body != null && body.getResult() != null && !body.getResult().isEmpty()) {
-                RecognitionResponse.Result first = body.getResult().get(0);
-                Optional<User> userOpt = userRepository.findById(first.getSubject());
-                if (userOpt.isPresent()) {
-                    return Optional.of(new FaceAuthenticationResult(userOpt.get(), first.getSimilarity()));
+                    url, HttpMethod.POST, requestEntity, RecognitionResponse.class);
+            RecognitionResponse respBody = response.getBody();
+            if (respBody != null && respBody.getResult() != null && !respBody.getResult().isEmpty()) {
+                List<RecognitionResponse.Subject> subjects = respBody.getResult().get(0).getSubjects();
+                if (subjects != null && !subjects.isEmpty()) {
+                    RecognitionResponse.Subject firstSubject = subjects.get(0);
+                    String subjectId = firstSubject.getSubject();
+                    double similarity = firstSubject.getSimilarity();
+                    Optional<User> userOpt = userRepository.findById(subjectId);
+                    if (userOpt.isPresent()) {
+                        return Optional.of(new FaceAuthenticationResult(userOpt.get(), similarity));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -70,6 +103,12 @@ public class CompreFaceClientService implements FaceRecognitionService {
         public void setResult(List<Result> result) { this.result = result; }
 
         static class Result {
+            private List<Subject> subjects;
+            public List<Subject> getSubjects() { return subjects; }
+            public void setSubjects(List<Subject> subjects) { this.subjects = subjects; }
+        }
+
+        static class Subject {
             private String subject;
             private double similarity;
             public String getSubject() { return subject; }

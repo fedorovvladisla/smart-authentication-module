@@ -25,12 +25,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/static/**", "/actuator/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/static/**", "/actuator/**").permitAll()
                         .requestMatchers("/api/auth/**", "/api/consent").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login") // можно создать свою страницу
+                        .loginPage("/login")
                         .defaultSuccessUrl("/admin/logs", true)
                         .permitAll()
                 )
