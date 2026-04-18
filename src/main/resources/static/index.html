@@ -1,201 +1,383 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интеллектуальная аутентификация</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Smart Auth Module | Интеллектуальная аутентификация</title>
     <style>
+        /* Стили для красивого интерфейса */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            background: #f5f5f5;
         }
-        .card {
+
+        .container {
             background: white;
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 550px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        input, button {
-            padding: 10px;
-            margin: 5px;
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
         button {
-            cursor: pointer;
-            background: #007bff;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
         button:hover {
-            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
-        .error {
-            color: red;
+
+        .method-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
         }
-        .success {
-            color: green;
+
+        .method-buttons button {
+            flex: 1;
+            background: #f0f2f5;
+            color: #333;
         }
+
+        .method-buttons button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .result.success {
+            border-left-color: #2e7d32;
+            background-color: #e8f5e9;
+        }
+
+        .result.error {
+            border-left-color: #c62828;
+            background-color: #ffebee;
+        }
+
+        .video-container {
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+        }
+
         video {
             width: 100%;
             max-width: 300px;
-            border: 1px solid #ccc;
-            margin-top: 10px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
         }
-        .flex {
+
+        .capture-buttons {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .capture-buttons button {
+            flex: 1;
+            background: #4caf50;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            font-size: 12px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <h2>Интеллектуальный модуль аутентификации</h2>
-    <div>
-        <input type="text" id="username" placeholder="Введите логин" />
-        <button onclick="initLogin()">Начать вход</button>
+<div class="container">
+    <div class="header">
+        <h1>🔐 Smart Authentication Module</h1>
+        <p>Интеллектуальная аутентификация: Passkey / Face ID</p>
     </div>
-    <div id="methodInfo" class="success" style="margin-top: 10px;"></div>
-</div>
+    <div class="content">
+        <div class="form-group">
+            <label>👤 Логин</label>
+            <input type="text" id="username" placeholder="Введите ваш логин" autocomplete="off">
+        </div>
 
-<div id="facePanel" class="card" style="display:none;">
-    <h3>Аутентификация по лицу</h3>
-    <video id="video" autoplay muted></video>
-    <div class="flex">
-        <button onclick="captureAndRegister()">Зарегистрировать лицо</button>
-        <button onclick="captureAndLogin()">Войти по лицу</button>
+        <div class="method-buttons">
+            <button id="passkeyBtn" class="active">🔑 Passkey</button>
+            <button id="faceBtn">📸 Face ID</button>
+        </div>
+
+        <!-- Блок для Passkey -->
+        <div id="passkeyPanel">
+            <button id="registerPasskeyBtn" style="margin-top: 20px;">➕ Зарегистрировать Passkey</button>
+            <button id="loginPasskeyBtn" style="margin-top: 10px;">🔓 Войти с Passkey</button>
+        </div>
+
+        <!-- Блок для Face ID (изначально скрыт) -->
+        <div id="facePanel" style="display: none;">
+            <div id="webcamContainer" class="video-container">
+                <video id="video" autoplay muted></video>
+                <div class="capture-buttons">
+                    <button id="captureRegisterBtn">📸 Зарегистрировать лицо</button>
+                    <button id="captureLoginBtn">🔓 Войти по лицу</button>
+                </div>
+            </div>
+            <button id="startCameraBtn" style="margin-top: 20px;">🎥 Включить камеру</button>
+        </div>
+
+        <div id="result" class="result"></div>
     </div>
-    <div id="faceResult"></div>
-</div>
-
-<div id="passkeyPanel" class="card" style="display:none;">
-    <h3>Аутентификация по Passkey</h3>
-    <p>Для работы Passkey требуется HTTPS. В демонстрационном режиме используйте Face ID.</p>
-    <button onclick="startPasskeyLogin()">Войти с Passkey</button>
-    <div id="passkeyResult"></div>
+    <div class="footer">
+        Интеллектуальный модуль аутентификации и управления доступом
+    </div>
 </div>
 
 <script>
-    let currentUsername = '';
+    // DOM элементы
+    const usernameInput = document.getElementById('username');
+    const passkeyBtn = document.getElementById('passkeyBtn');
+    const faceBtn = document.getElementById('faceBtn');
+    const passkeyPanel = document.getElementById('passkeyPanel');
+    const facePanel = document.getElementById('facePanel');
+    const resultDiv = document.getElementById('result');
+
+    let currentMethod = 'passkey';
     let videoStream = null;
+    const video = document.getElementById('video');
+    const startCameraBtn = document.getElementById('startCameraBtn');
+    const captureRegisterBtn = document.getElementById('captureRegisterBtn');
+    const captureLoginBtn = document.getElementById('captureLoginBtn');
+    const registerPasskeyBtn = document.getElementById('registerPasskeyBtn');
+    const loginPasskeyBtn = document.getElementById('loginPasskeyBtn');
 
-    // Инициализация входа – адаптивный выбор метода
-    async function initLogin() {
-        const username = document.getElementById('username').value;
-        if (!username) {
-            alert('Введите логин');
-            return;
-        }
-        currentUsername = username;
-
-        try {
-            const response = await fetch(`/api/auth/login/init?username=${username}`, {
-                method: 'POST'
-            });
-            const data = await response.json();
-            const method = data.method;
-            document.getElementById('methodInfo').innerHTML = `Рекомендуемый метод: <strong>${method}</strong>`;
-
-            // Показать нужную панель
-            document.getElementById('facePanel').style.display = 'none';
-            document.getElementById('passkeyPanel').style.display = 'none';
-
-            if (method === 'FACE') {
-                document.getElementById('facePanel').style.display = 'block';
-                startCamera();
-            } else if (method === 'PASSKEY') {
-                document.getElementById('passkeyPanel').style.display = 'block';
-            } else {
-                alert('Метод не поддерживается в демо');
-            }
-        } catch (err) {
-            console.error(err);
-            document.getElementById('methodInfo').innerHTML = `<span class="error">Ошибка: ${err.message}</span>`;
-        }
-    }
-
-    // Запуск камеры
-    async function startCamera() {
+    // Переключение между методами
+    passkeyBtn.addEventListener('click', () => {
+        currentMethod = 'passkey';
+        passkeyBtn.classList.add('active');
+        faceBtn.classList.remove('active');
+        passkeyPanel.style.display = 'block';
+        facePanel.style.display = 'none';
         if (videoStream) {
             videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
         }
-        try {
-            videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-            const video = document.getElementById('video');
-            video.srcObject = videoStream;
-        } catch (err) {
-            console.error('Ошибка доступа к камере', err);
-            alert('Нет доступа к камере');
-        }
+    });
+
+    faceBtn.addEventListener('click', () => {
+        currentMethod = 'face';
+        faceBtn.classList.add('active');
+        passkeyBtn.classList.remove('active');
+        facePanel.style.display = 'block';
+        passkeyPanel.style.display = 'none';
+    });
+
+    // Вспомогательная функция для отображения результата
+    function showResult(message, isSuccess = true) {
+        resultDiv.style.display = 'block';
+        resultDiv.textContent = message;
+        resultDiv.className = 'result ' + (isSuccess ? 'success' : 'error');
+        setTimeout(() => {
+            resultDiv.style.display = 'none';
+        }, 5000);
     }
 
-    // Захват текущего кадра с камеры в виде Blob
-    function captureFrame() {
-        const video = document.getElementById('video');
+    // --- Face ID функции ---
+    startCameraBtn.addEventListener('click', async () => {
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = videoStream;
+            document.getElementById('webcamContainer').style.display = 'block';
+            startCameraBtn.style.display = 'none';
+        } catch (err) {
+            showResult('Ошибка доступа к камере: ' + err.message, false);
+        }
+    });
+
+    async function captureAndSend(endpoint) {
+        if (!videoStream) {
+            showResult('Сначала включите камеру', false);
+            return;
+        }
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        return new Promise(resolve => {
-            canvas.toBlob(resolve, 'image/jpeg');
-        });
-    }
-
-    // Регистрация лица
-    async function captureAndRegister() {
-        const blob = await captureFrame();
-        if (!blob) {
-            alert('Не удалось захватить кадр');
-            return;
-        }
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
         const formData = new FormData();
-        // Отправляем как binary, но через blob
-        const response = await fetch(`/api/auth/face/register?username=${currentUsername}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/octet-stream' },
-            body: await blob.arrayBuffer()
-        });
-        const result = await response.json();
-        const div = document.getElementById('faceResult');
-        if (response.ok) {
-            div.innerHTML = `<span class="success">✅ ${result.message || 'Лицо зарегистрировано'}</span>`;
-        } else {
-            div.innerHTML = `<span class="error">❌ Ошибка: ${result.message || result.error}</span>`;
+        formData.append('file', blob, 'face.jpg');
+
+        try {
+            const response = await fetch(`/api/auth/face/${endpoint}?username=${usernameInput.value}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (response.ok) {
+                showResult(data.message || (endpoint === 'register' ? 'Лицо зарегистрировано!' : 'Вход выполнен! Токен: ' + data.token), true);
+            } else {
+                showResult(data.message || data.error || 'Ошибка', false);
+            }
+        } catch (err) {
+            showResult('Ошибка: ' + err.message, false);
         }
     }
 
-    // Вход по лицу
-    async function captureAndLogin() {
-        const blob = await captureFrame();
-        if (!blob) {
-            alert('Не удалось захватить кадр');
+    captureRegisterBtn.addEventListener('click', () => {
+        if (!usernameInput.value) {
+            showResult('Введите логин', false);
             return;
         }
-        const response = await fetch(`/api/auth/face/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/octet-stream' },
-            body: await blob.arrayBuffer()
-        });
-        const result = await response.json();
-        const div = document.getElementById('faceResult');
-        if (response.ok) {
-            div.innerHTML = `<span class="success">Успешный вход! Токен: ${result.token}</span>`;
-        } else {
-            div.innerHTML = `<span class="error">Ошибка: ${result.message || result.error}</span>`;
-        }
-    }
+        captureAndSend('register');
+    });
 
-    // Passkey логин (заглушка, требует HTTPS)
-    async function startPasskeyLogin() {
-        alert('Для работы Passkey необходимо настроить HTTPS. Используйте аутентификацию по лицу.');
-        // Здесь можно добавить реальную реализацию WebAuthn, но для демо достаточно упоминания.
-    }
+    captureLoginBtn.addEventListener('click', () => {
+        captureAndSend('login');
+    });
+
+    // --- Passkey функции ---
+    registerPasskeyBtn.addEventListener('click', async () => {
+        const username = usernameInput.value;
+        if (!username) {
+            showResult('Введите логин', false);
+            return;
+        }
+        try {
+            // Шаг 1: Запрос на начало регистрации
+            const initResponse = await fetch(`/api/auth/passkey/register/start?username=${username}`, { method: 'POST' });
+            const options = await initResponse.json();
+
+            // Шаг 2: Создание учётных данных через WebAuthn API
+            const credential = await navigator.credentials.create({ publicKey: options });
+
+            // Шаг 3: Отправка ответа на сервер для завершения регистрации
+            const finishResponse = await fetch('/api/auth/passkey/register/finish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credential)
+            });
+            const result = await finishResponse.json();
+            if (finishResponse.ok) {
+                showResult('Passkey успешно зарегистрирован!', true);
+            } else {
+                showResult(result.message || 'Ошибка регистрации Passkey', false);
+            }
+        } catch (err) {
+            showResult('Ошибка: ' + err.message, false);
+        }
+    });
+
+    loginPasskeyBtn.addEventListener('click', async () => {
+        const username = usernameInput.value;
+        if (!username) {
+            showResult('Введите логин', false);
+            return;
+        }
+        try {
+            // Шаг 1: Запрос на начало входа
+            const initResponse = await fetch(`/api/auth/passkey/login/start?username=${username}`, { method: 'POST' });
+            const options = await initResponse.json();
+
+            // Шаг 2: Получение учётных данных через WebAuthn API
+            const assertion = await navigator.credentials.get({ publicKey: options });
+
+            // Шаг 3: Отправка ответа на сервер для завершения входа
+            const finishResponse = await fetch('/api/auth/passkey/login/finish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(assertion)
+            });
+            const result = await finishResponse.json();
+            if (finishResponse.ok) {
+                showResult('Успешный вход! Токен: ' + result.token, true);
+            } else {
+                showResult(result.message || 'Ошибка входа', false);
+            }
+        } catch (err) {
+            showResult('Ошибка: ' + err.message, false);
+        }
+    });
 </script>
 </body>
 </html>

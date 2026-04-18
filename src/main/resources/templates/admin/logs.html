@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Логи аутентификации</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: #2c3e50; }
+        .nav a { margin-left: 20px; text-decoration: none; color: #667eea; font-weight: 500; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; font-weight: 600; }
+        .success { color: #2e7d32; font-weight: 500; }
+        .failure { color: #c62828; font-weight: 500; }
+        .pagination { margin-top: 20px; text-align: center; }
+        .pagination a { margin: 0 5px; padding: 6px 12px; background: #f0f2f5; border-radius: 6px; text-decoration: none; color: #333; }
+        .pagination a.current { background: #667eea; color: white; }
+        .logout-btn { background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📋 Логи аутентификации</h1>
+        <div>
+            <a href="/admin/users">👥 Пользователи</a>
+            <a href="/admin/settings">⚙️ Настройки</a>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-btn">🚪 Выйти</button>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        <table>
+            <thead>
+            <tr><th>Время</th><th>Пользователь</th><th>Метод</th><th>Результат</th><th>IP</th><th>Геолокация</th><th>Причина отказа</th><th>Уверенность</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${logs}">
+                <td th:text="${log.timestamp}"></td>
+                <td th:text="${log.username} ?: '—'"></td>
+                <td th:text="${log.method}"></td>
+                <td th:class="${log.success} ? 'success' : 'failure'" th:text="${log.success} ? 'Успех' : 'Отказ'"></td>
+                <td th:text="${log.ipAddress}"></td>
+                <td th:text="${log.geoLocation} ?: '—'"></td>
+                <td th:text="${log.failureReason} ?: '—'"></td>
+                <td th:text="${log.confidence}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="pagination" th:if="${totalPages > 1}">
+            <a th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:href="@{/admin/logs(page=${i})}" th:text="${i}" th:class="${i == currentPage} ? 'current' : ''"></a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
