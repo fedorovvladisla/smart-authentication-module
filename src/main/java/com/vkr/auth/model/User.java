@@ -34,11 +34,6 @@ public class User {
     @EqualsAndHashCode.Exclude
     private List<WebAuthnCredential> webauthnCredentials;
 
-    @OneToOne(mappedBy = "user")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private FacePrint facePrint;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER;

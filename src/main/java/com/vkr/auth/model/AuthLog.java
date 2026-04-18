@@ -14,7 +14,7 @@ public class AuthLog {
 
     private String userId;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String username; // денормализация
 
     @Column(nullable = false)
