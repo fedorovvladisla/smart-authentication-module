@@ -85,4 +85,10 @@ public class AdminController {
         settingsRepository.save(settings);
         return "redirect:/admin/settings";
     }
+
+    @PostMapping("/users/{id}/delete")
+    public String deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return "redirect:/admin/users";
+    }
 }
