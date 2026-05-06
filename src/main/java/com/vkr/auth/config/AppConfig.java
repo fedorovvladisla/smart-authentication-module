@@ -6,6 +6,7 @@ import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,5 +20,11 @@ public class AppConfig {
         converters.add(new FormHttpMessageConverter());
         restTemplate.setMessageConverters(converters);
         return restTemplate;
+    }
+    @Bean
+
+    public Clock clock() {
+        return Clock.systemDefaultZone();   // для production
+        // return Clock.fixed(...) для тестов
     }
 }
