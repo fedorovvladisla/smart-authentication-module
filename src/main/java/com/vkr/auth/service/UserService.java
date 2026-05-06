@@ -2,7 +2,8 @@ package com.vkr.auth.service;
 
 import com.vkr.auth.model.Role;
 import com.vkr.auth.model.User;
-import com.vkr.auth.repository.UserRepository;
+import com.vkr.auth.model.WebAuthnCredential;
+import com.vkr.auth.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +19,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final WebAuthnCredentialRepository webAuthnCredentialRepository;
+    private final AuthLogRepository authLogRepository;
+    private final ConsentRepository consentRepository;
+    private final FaceRecognitionService faceRecognitionService;
 
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
@@ -47,7 +53,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username); // новый метод в репозитории
+        return userRepository.existsByUsername(username);
     }
 
     @Transactional
@@ -80,5 +86,35 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> findById(String id) {
         return userRepository.findById(id);
+    }
+
+    @Transactional
+    public void deleteUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + userId));
+
+        // Удаляем WebAuthn-учётные данные
+        List<WebAuthnCredential> credentials = webAuthnCredentialRepository.findByUser(user);
+        webAuthnCredentialRepository.deleteAll(credentials);
+
+        // Удаляем логи пользователя
+        authLogRepository.deleteByUserId(userId);
+
+        // Удаляем согласие на обработку биометрии
+        consentRepository.deleteByUserId(userId);
+
+        // Удаляем refresh-токены
+        refreshTokenRepository.deleteByUsername(user.getUsername());
+
+        // Удаляем лицо из CompreFace
+        try {
+            faceRecognitionService.deleteFace(user);
+        } catch (Exception e) {
+            log.warn("Не удалось удалить лицо пользователя {} из CompreFace: {}", user.getUsername(), e.getMessage());
+        }
+
+        // Удаляем самого пользователя
+        userRepository.delete(user);
+        log.info("Пользователь {} полностью удалён", user.getUsername());
     }
 }

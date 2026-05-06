@@ -18,17 +18,24 @@ import java.time.LocalDateTime;
 public class AuthLogService {
 
     private final AuthLogRepository authLogRepository;
-    private final GeoIpService geoIpService;  // нужно создать этот сервис (см. ниже)
+    private final GeoIpService geoIpService;
 
     @Transactional
     public void logAuthAttempt(String username, String method, HttpServletRequest request,
                                boolean success, String failureReason, Double confidence) {
-        AuthLog logEntry = new AuthLog();  // переименовал, чтобы не конфликтовать с логгером
+        AuthLog logEntry = new AuthLog();
         logEntry.setUsername(username != null ? username : "anonymous");
         logEntry.setTimestamp(LocalDateTime.now());
         logEntry.setMethod(method);
         logEntry.setSuccess(success);
-        logEntry.setFailureReason(failureReason);
+
+        // обрезаем очень длинные сообщения об ошибках, чтобы влезли в БД
+        String safeReason = failureReason;
+        if (failureReason != null && failureReason.length() > 250) {
+            safeReason = failureReason.substring(0, 250) + "...";
+        }
+        logEntry.setFailureReason(safeReason);
+
         logEntry.setConfidence(confidence != null ? confidence : 0.0);
 
         String ip = request.getRemoteAddr();

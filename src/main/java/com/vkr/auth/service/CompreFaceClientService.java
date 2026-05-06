@@ -97,6 +97,21 @@ public class CompreFaceClientService implements FaceRecognitionService {
         return Optional.empty();
     }
 
+    @Override
+    public void deleteFace(User user) {
+        String url = baseUrl + "/api/v1/recognition/subjects/" + user.getId();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-api-key", apiKey);
+
+        try {
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            restTemplate.exchange(url, HttpMethod.DELETE, requestEntity, Void.class);
+            log.info("Face for user {} deleted from CompreFace", user.getUsername());
+        } catch (Exception e) {
+            log.error("Failed to delete face for user {} from CompreFace: {}", user.getUsername(), e.getMessage());
+        }
+    }
+
     static class RecognitionResponse {
         private List<Result> result;
         public List<Result> getResult() { return result; }

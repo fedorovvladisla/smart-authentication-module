@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface FaceRecognitionService {
     void registerFace(User user, byte[] imageData);
     Optional<FaceAuthenticationResult> authenticate(byte[] imageData);
+    void deleteFace(User user);
 }
