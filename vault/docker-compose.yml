@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: dev-only-token
+      VAULT_DISABLE_MLOCK: "true"   # для Windows
+      SKIP_SETCAP: "true"           # для Windows
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - vault_net
+
+networks:
+  vault_net:
+    driver: bridge
