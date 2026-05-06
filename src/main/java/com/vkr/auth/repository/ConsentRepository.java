@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ConsentRepository extends JpaRepository<UserConsent, String> {
     Optional<UserConsent> findByUserId(String userId);
     boolean existsByUserId(String userId);
+    void deleteByUserId(String userId);
 }
