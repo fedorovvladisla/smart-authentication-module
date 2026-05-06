@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AuthResponse {
-    private String token;      // JWT или session id
+    private String accessToken;
+    private String refreshToken;
     private String message;
 }
