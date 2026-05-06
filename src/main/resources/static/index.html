@@ -4,180 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Smart Auth Module | Интеллектуальная аутентификация</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Стили для красивого интерфейса */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 550px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .container:hover {
-            transform: translateY(-5px);
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .method-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .method-buttons button {
-            flex: 1;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f0f2f5;
-            color: #333;
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
+            background-image:
+                    radial-gradient(ellipse at 20% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 20%, rgba(118, 75, 162, 0.06) 0%, transparent 50%),
+                    radial-gradient(ellipse at 50% 80%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
         }
-
-        .method-buttons button.active {
+        .container {
+            background: white; border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+            width: 100%; max-width: 480px; overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        .header {
+            background: white; color: #1a1a2e; padding: 32px 32px 20px;
+            text-align: center; border-bottom: 1px solid #f0f0f5;
+        }
+        .header .icon {
+            width: 56px; height: 56px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 24px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
         }
-
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+        .header p  { font-size: 13px; color: #888; font-weight: 400; }
+        .content  { padding: 28px 32px 32px; }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block; margin-bottom: 8px; color: #333;
+            font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        input {
+            width: 100%; padding: 14px 16px; border: 2px solid #e8e8ef;
+            border-radius: 12px; font-size: 15px; transition: all 0.2s ease;
+            font-family: inherit; background: #fafafa;
+        }
+        input:focus {
+            outline: none; border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08); background: white;
+        }
+        button {
+            width: 100%; padding: 14px; background: #1a1a2e; color: white;
+            border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; font-family: inherit; letter-spacing: -0.2px;
+        }
+        button:hover {
+            background: #2d2d44; transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(26, 26, 46, 0.25);
+        }
+        button:active { transform: translateY(0); }
+        .method-buttons {
+            display: flex; gap: 10px; margin-top: 20px;
+            background: #f5f5fa; border-radius: 12px; padding: 4px;
+        }
+        .method-buttons button {
+            flex: 1; background: transparent; color: #666; font-weight: 500;
+            padding: 10px; border-radius: 10px; font-size: 14px; transition: all 0.2s ease;
+        }
+        .method-buttons button.active {
+            background: white; color: #1a1a2e;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); font-weight: 600;
+        }
+        .method-buttons button:hover { background: rgba(255, 255, 255, 0.7); transform: none; box-shadow: none; }
+        .method-buttons button.active:hover { background: white; }
         .result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #667eea;
-            display: none;
+            margin-top: 16px; padding: 14px 16px; border-radius: 10px;
+            font-size: 13px; font-weight: 500; display: none; animation: slideDown 0.2s ease;
         }
-
-        .result.success {
-            border-left-color: #2e7d32;
-            background-color: #e8f5e9;
+        .result.success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+        .result.error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-
-        .result.error {
-            border-left-color: #c62828;
-            background-color: #ffebee;
-        }
-
-        .video-container {
-            margin-top: 20px;
-            display: none;
-            text-align: center;
-        }
-
+        .video-container { margin-top: 16px; display: none; text-align: center; }
         video {
-            width: 100%;
-            max-width: 300px;
-            border-radius: 10px;
-            border: 2px solid #e0e0e0;
+            width: 100%; max-width: 280px; border-radius: 16px;
+            border: 2px solid #e8e8ef; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         }
-
-        .capture-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
+        .capture-buttons { display: flex; gap: 8px; margin-top: 12px; }
         .capture-buttons button {
-            flex: 1;
-            background: #4caf50;
+            flex: 1; background: #f5f5fa; color: #1a1a2e; font-weight: 500; font-size: 13px;
         }
-
+        .capture-buttons button:hover { background: #e8e8f5; transform: none; box-shadow: none; }
         .footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #f8f9fa;
-            font-size: 12px;
-            color: #666;
+            text-align: center; padding: 16px; background: #fafafa;
+            font-size: 11px; color: #999; border-top: 1px solid #f0f0f5;
         }
+        .user-status {
+            margin-bottom: 20px; padding: 12px 16px; background: #f5f5fa;
+            border-radius: 10px; display: none; align-items: center;
+            justify-content: space-between; animation: slideDown 0.2s ease;
+        }
+        .user-status .info { color: #1a1a2e; font-weight: 600; font-size: 13px; word-break: break-word; }
+        .logout-btn {
+            background: #fee2e2; color: #991b1b; padding: 8px 14px; border-radius: 8px;
+            cursor: pointer; border: none; font-size: 13px; font-weight: 600;
+            white-space: nowrap; margin-left: 10px; transition: all 0.2s ease; width: auto;
+        }
+        .logout-btn:hover { background: #fecaca; transform: none; box-shadow: none; }
+        .loader {
+            display: none; width: 24px; height: 24px;
+            border: 3px solid #e8e8ef; border-top: 3px solid #667eea;
+            border-radius: 50%; animation: spin 0.8s linear infinite; margin: 16px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }
+        }
+        #startCameraBtn {
+            margin-top: 16px; background: #f5f5fa; color: #1a1a2e; font-weight: 500;
+        }
+        #startCameraBtn:hover { background: #e8e8f5; transform: none; box-shadow: none; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>🔐 Smart Authentication Module</h1>
+        <div class="icon">🔐</div>
+        <h1>Smart Authentication Module</h1>
         <p>Интеллектуальная аутентификация: Passkey / Face ID</p>
     </div>
     <div class="content">
+        <div id="userStatus" class="user-status">
+            <span class="info" id="statusText"></span>
+            <button class="logout-btn" id="logoutBtn">🚪 Выйти</button>
+        </div>
+
         <div class="form-group">
             <label>👤 Логин</label>
             <input type="text" id="username" placeholder="Введите ваш логин" autocomplete="off">
@@ -188,13 +148,11 @@
             <button id="faceBtn">📸 Face ID</button>
         </div>
 
-        <!-- Блок для Passkey -->
         <div id="passkeyPanel">
             <button id="registerPasskeyBtn" style="margin-top: 20px;">➕ Зарегистрировать Passkey</button>
             <button id="loginPasskeyBtn" style="margin-top: 10px;">🔓 Войти с Passkey</button>
         </div>
 
-        <!-- Блок для Face ID (изначально скрыт) -->
         <div id="facePanel" style="display: none;">
             <div id="webcamContainer" class="video-container">
                 <video id="video" autoplay muted></video>
@@ -206,6 +164,7 @@
             <button id="startCameraBtn" style="margin-top: 20px;">🎥 Включить камеру</button>
         </div>
 
+        <div id="loader" class="loader"></div>
         <div id="result" class="result"></div>
     </div>
     <div class="footer">
@@ -214,7 +173,159 @@
 </div>
 
 <script>
-    // DOM элементы
+    function saveTokens(accessToken, refreshToken) {
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+    }
+    function getAccessToken() { return localStorage.getItem('accessToken'); }
+    function getRefreshToken() { return localStorage.getItem('refreshToken'); }
+    function clearTokens() {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+    }
+
+    function showLoader() { document.getElementById('loader').style.display = 'block'; }
+    function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+
+    function updateUserStatus(username, method) {
+        const statusDiv = document.getElementById('userStatus');
+        const text = document.getElementById('statusText');
+        if (username) {
+            text.textContent = `👋 ${username} (вход через ${method})`;
+            statusDiv.style.display = 'flex';
+        } else {
+            statusDiv.style.display = 'none';
+        }
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        clearTokens();
+        updateUserStatus(null, null);
+        showResult('Вы вышли из системы', true);
+    });
+
+    (function checkExistingSession() {
+        const token = getAccessToken();
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const username = payload.sub;
+                updateUserStatus(username, 'предыдущий вход');
+            } catch(e) { /* невалидный токен */ }
+        }
+    })();
+
+    async function authenticatedFetch(url, options = {}) {
+        const token = getAccessToken();
+        if (token) {
+            options.headers = options.headers || {};
+            options.headers['Authorization'] = `Bearer ${token}`;
+        }
+        let response = await fetch(url, options);
+        if (response.status === 401 && getRefreshToken()) {
+            const refreshed = await refreshAccessToken();
+            if (refreshed) {
+                options.headers['Authorization'] = `Bearer ${getAccessToken()}`;
+                response = await fetch(url, options);
+            } else {
+                clearTokens();
+                updateUserStatus(null, null);
+                window.location.href = '/login';
+            }
+        }
+        return response;
+    }
+
+    async function refreshAccessToken() {
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) return false;
+        try {
+            const resp = await fetch('/api/auth/token/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                saveTokens(data.accessToken, data.refreshToken);
+                return true;
+            } else {
+                clearTokens();
+                return false;
+            }
+        } catch (e) {
+            clearTokens();
+            return false;
+        }
+    }
+
+    function _arrayBufferToBase64(buffer) {
+        if (!buffer) { console.error("_arrayBufferToBase64 получил undefined/null"); return ""; }
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function _base64ToArrayBuffer(base64) {
+        if (!base64) { console.error("_base64ToArrayBuffer получил undefined/null"); return new ArrayBuffer(0); }
+        base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) base64 += '=';
+        const binary = atob(base64);
+        const buffer = new ArrayBuffer(binary.length);
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return buffer;
+    }
+
+    function _prepareMakeCredentialOptions(serverOptions) {
+        console.log('serverOptions для регистрации:', JSON.stringify(serverOptions, null, 2));
+        const opts = serverOptions.publicKey;
+        return {
+            publicKey: {
+                challenge: _base64ToArrayBuffer(opts.challenge),
+                rp: opts.rp,
+                user: { id: _base64ToArrayBuffer(opts.user.id), name: opts.user.name, displayName: opts.user.displayName },
+                pubKeyCredParams: opts.pubKeyCredParams,
+                timeout: opts.timeout,
+                excludeCredentials: opts.excludeCredentials?.map(cred => ({ ...cred, id: _base64ToArrayBuffer(cred.id) })),
+                authenticatorSelection: opts.authenticatorSelection,
+                attestation: opts.attestation
+            }
+        };
+    }
+
+    function _prepareGetAssertionOptions(serverOptions) {
+        console.log('serverOptions для входа:', JSON.stringify(serverOptions, null, 2));
+        const opts = serverOptions.publicKeyCredentialRequestOptions || serverOptions.publicKey || serverOptions;
+        return {
+            publicKey: {
+                challenge: _base64ToArrayBuffer(opts.challenge),
+                timeout: opts.timeout,
+                rpId: opts.rpId,
+                allowCredentials: opts.allowCredentials?.map(cred => ({ ...cred, id: _base64ToArrayBuffer(cred.id) })),
+                userVerification: opts.userVerification
+            }
+        };
+    }
+
+    function _serializeCredential(credential) {
+        console.log('Ответ аутентификатора (raw):', credential);
+        const response = credential.response;
+        return {
+            id: credential.id,
+            rawId: _arrayBufferToBase64(credential.rawId),
+            type: credential.type,
+            clientExtensionResults: credential.getClientExtensionResults ? credential.getClientExtensionResults() : {},
+            response: {
+                clientDataJSON: _arrayBufferToBase64(response.clientDataJSON),
+                attestationObject: response.attestationObject ? _arrayBufferToBase64(response.attestationObject) : undefined,
+                authenticatorData: response.authenticatorData ? _arrayBufferToBase64(response.authenticatorData) : undefined,
+                signature: response.signature ? _arrayBufferToBase64(response.signature) : undefined,
+                userHandle: response.userHandle ? _arrayBufferToBase64(response.userHandle) : undefined
+            }
+        };
+    }
+
     const usernameInput = document.getElementById('username');
     const passkeyBtn = document.getElementById('passkeyBtn');
     const faceBtn = document.getElementById('faceBtn');
@@ -222,7 +333,6 @@
     const facePanel = document.getElementById('facePanel');
     const resultDiv = document.getElementById('result');
 
-    let currentMethod = 'passkey';
     let videoStream = null;
     const video = document.getElementById('video');
     const startCameraBtn = document.getElementById('startCameraBtn');
@@ -231,152 +341,156 @@
     const registerPasskeyBtn = document.getElementById('registerPasskeyBtn');
     const loginPasskeyBtn = document.getElementById('loginPasskeyBtn');
 
-    // Переключение между методами
     passkeyBtn.addEventListener('click', () => {
-        currentMethod = 'passkey';
         passkeyBtn.classList.add('active');
         faceBtn.classList.remove('active');
         passkeyPanel.style.display = 'block';
         facePanel.style.display = 'none';
-        if (videoStream) {
-            videoStream.getTracks().forEach(track => track.stop());
-            videoStream = null;
-        }
+        if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
     });
-
     faceBtn.addEventListener('click', () => {
-        currentMethod = 'face';
         faceBtn.classList.add('active');
         passkeyBtn.classList.remove('active');
         facePanel.style.display = 'block';
         passkeyPanel.style.display = 'none';
     });
 
-    // Вспомогательная функция для отображения результата
     function showResult(message, isSuccess = true) {
         resultDiv.style.display = 'block';
         resultDiv.textContent = message;
         resultDiv.className = 'result ' + (isSuccess ? 'success' : 'error');
-        setTimeout(() => {
-            resultDiv.style.display = 'none';
-        }, 5000);
+        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
     }
 
-    // --- Face ID функции ---
+    async function captureFrame() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+    }
+
     startCameraBtn.addEventListener('click', async () => {
         try {
             videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = videoStream;
             document.getElementById('webcamContainer').style.display = 'block';
             startCameraBtn.style.display = 'none';
-        } catch (err) {
-            showResult('Ошибка доступа к камере: ' + err.message, false);
-        }
+        } catch (err) { showResult('Ошибка доступа к камере: ' + err.message, false); }
     });
 
-    async function captureAndSend(endpoint) {
-        if (!videoStream) {
-            showResult('Сначала включите камеру', false);
-            return;
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+    async function loginWithFace() {
+        if (!videoStream) { showResult('Сначала включите камеру', false); return; }
+        const username = usernameInput.value;
+        if (!username) { showResult('Введите логин', false); return; }
+        const blob = await captureFrame();
         const formData = new FormData();
         formData.append('file', blob, 'face.jpg');
 
+        showLoader();
         try {
-            const response = await fetch(`/api/auth/face/${endpoint}?username=${usernameInput.value}`, {
+            const response = await authenticatedFetch(`/api/auth/face/login?username=${username}`, {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
             if (response.ok) {
-                showResult(data.message || (endpoint === 'register' ? 'Лицо зарегистрировано!' : 'Вход выполнен! Токен: ' + data.token), true);
+                if (data.accessToken && data.refreshToken) {
+                    saveTokens(data.accessToken, data.refreshToken);
+                    updateUserStatus(username, 'Face ID');
+                }
+                showResult(data.message || 'Вход выполнен!', true);
+            } else if (response.status === 202) {
+                showResult('Лицо распознано. Подтвердите вход с помощью Passkey.', true);
+                passkeyBtn.click();
+                setTimeout(() => loginPasskeyBtn.click(), 300);
             } else {
                 showResult(data.message || data.error || 'Ошибка', false);
             }
-        } catch (err) {
-            showResult('Ошибка: ' + err.message, false);
-        }
+        } catch (err) { showResult('Ошибка: ' + err.message, false); }
+        finally { hideLoader(); }
     }
 
-    captureRegisterBtn.addEventListener('click', () => {
-        if (!usernameInput.value) {
-            showResult('Введите логин', false);
-            return;
-        }
-        captureAndSend('register');
-    });
+    async function registerWithLiveness() {
+        if (!videoStream) { showResult('Сначала включите камеру', false); return; }
+        const username = usernameInput.value;
+        if (!username) { showResult('Введите логин', false); return; }
 
-    captureLoginBtn.addEventListener('click', () => {
-        captureAndSend('login');
-    });
+        try {
+            showResult('Смотрите прямо, кадр 1...', true);
+            const frame1 = await captureFrame();
+            await new Promise(r => setTimeout(r, 1000));
+            showResult('Поверните голову, кадр 2...', true);
+            const frame2 = await captureFrame();
 
-    // --- Passkey функции ---
+            const formData = new FormData();
+            formData.append('frame1', frame1, 'frame1.jpg');
+            formData.append('frame2', frame2, 'frame2.jpg');
+
+            showLoader();
+            const response = await authenticatedFetch(`/api/auth/face/register-liveness?username=${username}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (response.ok) {
+                showResult(data.message || 'Лицо зарегистрировано!', true);
+            } else {
+                showResult(data.message || data.error || 'Ошибка', false);
+            }
+        } catch (err) { showResult('Ошибка: ' + err.message, false); }
+        finally { hideLoader(); }
+    }
+
+    captureRegisterBtn.addEventListener('click', registerWithLiveness);
+    captureLoginBtn.addEventListener('click', loginWithFace);
+
     registerPasskeyBtn.addEventListener('click', async () => {
         const username = usernameInput.value;
-        if (!username) {
-            showResult('Введите логин', false);
-            return;
-        }
+        if (!username) { showResult('Введите логин', false); return; }
+        showLoader();
         try {
-            // Шаг 1: Запрос на начало регистрации
-            const initResponse = await fetch(`/api/auth/passkey/register/start?username=${username}`, { method: 'POST' });
-            const options = await initResponse.json();
-
-            // Шаг 2: Создание учётных данных через WebAuthn API
-            const credential = await navigator.credentials.create({ publicKey: options });
-
-            // Шаг 3: Отправка ответа на сервер для завершения регистрации
-            const finishResponse = await fetch('/api/auth/passkey/register/finish', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credential)
+            const initResp = await authenticatedFetch(`/api/auth/passkey/register/start?username=${username}`, { method: 'POST' });
+            if (!initResp.ok) { const errText = await initResp.text(); throw new Error('Ошибка сервера: ' + initResp.status + ' ' + errText); }
+            const serverOptions = await initResp.json();
+            const makeCredOptions = _prepareMakeCredentialOptions(serverOptions);
+            const credential = await navigator.credentials.create({ publicKey: makeCredOptions.publicKey });
+            const serialized = _serializeCredential(credential);
+            const finishResp = await authenticatedFetch('/api/auth/passkey/register/finish', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(serialized)
             });
-            const result = await finishResponse.json();
-            if (finishResponse.ok) {
-                showResult('Passkey успешно зарегистрирован!', true);
-            } else {
-                showResult(result.message || 'Ошибка регистрации Passkey', false);
-            }
-        } catch (err) {
-            showResult('Ошибка: ' + err.message, false);
-        }
+            const result = await finishResp.json();
+            if (finishResp.ok) { showResult('Passkey успешно зарегистрирован!', true); }
+            else { showResult(result.message || 'Ошибка регистрации Passkey', false); }
+        } catch (err) { console.error('Ошибка регистрации Passkey:', err); showResult('Ошибка: ' + err.message, false); }
+        finally { hideLoader(); }
     });
 
     loginPasskeyBtn.addEventListener('click', async () => {
         const username = usernameInput.value;
-        if (!username) {
-            showResult('Введите логин', false);
-            return;
-        }
+        if (!username) { showResult('Введите логин', false); return; }
+        showLoader();
         try {
-            // Шаг 1: Запрос на начало входа
-            const initResponse = await fetch(`/api/auth/passkey/login/start?username=${username}`, { method: 'POST' });
-            const options = await initResponse.json();
-
-            // Шаг 2: Получение учётных данных через WebAuthn API
-            const assertion = await navigator.credentials.get({ publicKey: options });
-
-            // Шаг 3: Отправка ответа на сервер для завершения входа
-            const finishResponse = await fetch('/api/auth/passkey/login/finish', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(assertion)
+            const initResp = await authenticatedFetch(`/api/auth/passkey/login/start?username=${username}`, { method: 'POST' });
+            if (!initResp.ok) { const errText = await initResp.text(); throw new Error('Ошибка сервера: ' + initResp.status + ' ' + errText); }
+            const serverOptions = await initResp.json();
+            const getOptions = _prepareGetAssertionOptions(serverOptions);
+            const assertion = await navigator.credentials.get({ publicKey: getOptions.publicKey });
+            const serialized = _serializeCredential(assertion);
+            const finishResp = await authenticatedFetch('/api/auth/passkey/login/finish', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(serialized)
             });
-            const result = await finishResponse.json();
-            if (finishResponse.ok) {
-                showResult('Успешный вход! Токен: ' + result.token, true);
-            } else {
-                showResult(result.message || 'Ошибка входа', false);
-            }
-        } catch (err) {
-            showResult('Ошибка: ' + err.message, false);
-        }
+            const result = await finishResp.json();
+            if (finishResp.ok) {
+                if (result.accessToken && result.refreshToken) {
+                    saveTokens(result.accessToken, result.refreshToken);
+                    updateUserStatus(username, 'Passkey');
+                }
+                showResult('Успешный вход!', true);
+            } else { showResult(result.message || 'Ошибка входа', false); }
+        } catch (err) { console.error('Ошибка входа Passkey:', err); showResult('Ошибка: ' + err.message, false); }
+        finally { hideLoader(); }
     });
 </script>
 </body>

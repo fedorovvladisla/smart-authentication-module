@@ -3,15 +3,17 @@
 # ============================================================
 
 spring:
-  # Имя приложения (используется в Actuator, логах)
   application:
     name: smart-authentication-module
+  # Активируем Vault как источник конфигурации
+  config:
+    import: optional:vault://secret/smart-authentication-module
 
   # ---------- База данных PostgreSQL ----------
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:authdb}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:secret}
+    password: ${db.password}                     # из Vault
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -23,8 +25,8 @@ spring:
   # ---------- JPA / Hibernate ----------
   jpa:
     hibernate:
-      ddl-auto: update                 # создаст/обновит таблицы при старте
-    show-sql: false                    # не выводим SQL в консоль (для отладки можно true)
+      ddl-auto: update
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -36,7 +38,7 @@ spring:
           use_jdbc_metadata_defaults: false
     open-in-view: false
 
-  # ---------- Redis (кэш неудачных попыток) ----------
+  # ---------- Redis ----------
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -49,13 +51,26 @@ spring:
           max-idle: 8
           min-idle: 0
 
-  # ---------- Thymeleaf для админки ----------
+  # ---------- Thymeleaf ----------
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
-    cache: false                       # отключаем кэш для разработки
+    cache: false
 
-# ---------- Настройки встроенного сервера Tomcat ----------
+  # ---------- Vault ----------
+  cloud:
+    vault:
+      host: vault
+      port: 8200
+      scheme: http
+      authentication: TOKEN
+      token: dev-only-token
+      kv:
+        enabled: true
+        backend: secret
+        default-context: smart-authentication-module
+
+# ---------- Сервер ----------
 server:
   port: ${PORT:8080}
   error:
@@ -80,12 +95,12 @@ logging:
     max-size: 10MB
     max-history: 30
 
-# ---------- Spring Boot Actuator (healthcheck, метрики) ----------
+# ---------- Actuator ----------
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: env,health,info,metrics   # пока оставим env для проверки
   endpoint:
     health:
       show-details: always
@@ -95,11 +110,9 @@ management:
     db:
       enabled: true
 
-
 # ============================================================
 # Пользовательские настройки модуля аутентификации
 # ============================================================
-
 auth:
   webauthn:
     rp-id: ${RP_ID:localhost}
@@ -108,13 +121,13 @@ auth:
   geoip:
     database: classpath:GeoLite2-City.mmdb
   jwt:
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-    expiration: 86400000
-    refresh-expiration: 604800000
+    access-secret: ${jwt.access-secret}          # из Vault
+    refresh-secret: ${jwt.refresh-secret}        # из Vault
+    access-expiration-ms: 900000                 # 15 минут
+    refresh-expiration-ms: 604800000             # 7 дней
 
 # Настройка CompreFace
-
 compreface:
-  base-url: http://localhost:8001
-  api-key: 84bc037e-f497-4032-b64f-ff4cdc7d6970
+  base-url: ${COMPREFACE_BASE_URL:http://localhost:8001}
+  api-key: ${compreface.api-key}                 # из Vault
   recognition-url: ${compreface.base-url}/api/v1/recognition/${compreface.api-key}

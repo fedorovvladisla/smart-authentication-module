@@ -16,6 +16,9 @@
         th { background-color: #f8f9fa; font-weight: 600; }
         .success { color: #2e7d32; font-weight: 500; }
         .failure { color: #c62828; font-weight: 500; }
+        .blocked { color: #e65100; font-weight: 600; }
+        .duplicate { color: #e65100; font-weight: 600; }
+        .liveness { color: #e65100; font-weight: 600; }
         .pagination { margin-top: 20px; text-align: center; }
         .pagination a { margin: 0 5px; padding: 6px 12px; background: #f0f2f5; border-radius: 6px; text-decoration: none; color: #333; }
         .pagination a.current { background: #667eea; color: white; }
@@ -37,14 +40,31 @@
     <div class="card">
         <table>
             <thead>
-            <tr><th>Время</th><th>Пользователь</th><th>Метод</th><th>Результат</th><th>IP</th><th>Геолокация</th><th>Причина отказа</th><th>Уверенность</th></tr>
+            <tr>
+                <th>Время</th>
+                <th>Пользователь</th>
+                <th>Метод</th>
+                <th>Результат</th>
+                <th>IP</th>
+                <th>Геолокация</th>
+                <th>Причина отказа</th>
+                <th>Уверенность</th>
+            </tr>
             </thead>
             <tbody>
             <tr th:each="log : ${logs}">
                 <td th:text="${log.timestamp}"></td>
                 <td th:text="${log.username} ?: '—'"></td>
                 <td th:text="${log.method}"></td>
-                <td th:class="${log.success} ? 'success' : 'failure'" th:text="${log.success} ? 'Успех' : 'Отказ'"></td>
+                <td>
+                    <span th:if="${log.success}" class="success">✅ Успех</span>
+                    <span th:unless="${log.success}">
+                        <span th:if="${#strings.contains(log.failureReason, 'Account is blocked')}" class="blocked">⛔ Заблокирован</span>
+                        <span th:elseif="${#strings.contains(log.failureReason, 'Face already registered')}" class="duplicate">👥 Дубликат лица</span>
+                        <span th:elseif="${#strings.contains(log.failureReason, 'Liveness check failed')}" class="liveness">🤖 Проверка живости</span>
+                        <span th:else class="failure">❌ Отказ</span>
+                    </span>
+                </td>
                 <td th:text="${log.ipAddress}"></td>
                 <td th:text="${log.geoLocation} ?: '—'"></td>
                 <td th:text="${log.failureReason} ?: '—'"></td>
@@ -53,7 +73,10 @@
             </tbody>
         </table>
         <div class="pagination" th:if="${totalPages > 1}">
-            <a th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:href="@{/admin/logs(page=${i})}" th:text="${i}" th:class="${i == currentPage} ? 'current' : ''"></a>
+            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:href="@{/admin/logs(page=${i})}"
+               th:text="${i}"
+               th:class="${i == currentPage} ? 'current' : ''"></a>
         </div>
     </div>
 </div>
