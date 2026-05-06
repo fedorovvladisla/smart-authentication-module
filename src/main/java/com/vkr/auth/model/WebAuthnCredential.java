@@ -25,9 +25,13 @@ public class WebAuthnCredential {
     @EqualsAndHashCode.Exclude
     private User user;
 
-    @Column(nullable = false, length = 4096)
+    // Разрешаем null, потому что хранить будем только COSE-ключ
+    @Column(nullable = true, length = 4096)
     private String publicKeyPem;
 
     @Column(nullable = false)
     private long counter;
+
+    @Column(columnDefinition = "BYTEA")   // или @Lob
+    private byte[] publicKeyCose;
 }
